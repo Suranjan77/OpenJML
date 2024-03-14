@@ -417,6 +417,7 @@ public class JmlOptions extends Options {
 
         if (utils.esc) commentKeys.add("ESC");
         if (utils.rac) commentKeys.add("RAC");
+        if (utils.jml4sec) commentKeys.add("JML4SEC");
         if (JmlOption.langJML.equals(JmlOption.value(context, JmlOption.LANG))) commentKeys.add("STRICT");
         commentKeys.add("OPENJML");
 

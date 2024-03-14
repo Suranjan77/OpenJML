@@ -1538,6 +1538,7 @@ public class JmlAttr extends Attr implements IJmlVisitor {
         stateTable.put(assignableClauseKind, new int[]{1,1,1});
         stateTable.put(ensuresClauseKind, new int[]{1,1,1});
         stateTable.put(signalsClauseKind, new int[]{1,1,1});
+        stateTable.put(alarmsClauseKind, new int[]{1,1,1});
         stateTable.put(signalsOnlyClauseKind, new int[]{1,1,1});
         stateTable.put(callableClause, new int[]{1,1,1});
         stateTable.put(specGroupStartClause, new int[]{0,1,-1});
@@ -2584,6 +2585,7 @@ public class JmlAttr extends Attr implements IJmlVisitor {
         boolean signalsIsFalse = false;
         for (JmlMethodClause cl: prefix) {
             if (cl.clauseKind == signalsClauseKind && treeutils.isFalseLit(((JmlMethodClauseSignals)cl).expression)) signalsIsFalse = true;
+            if (cl.clauseKind == alarmsClauseKind && treeutils.isFalseLit(((JmlMethodClauseAlarms)cl).expression)) signalsIsFalse = true;
             if (cl.clauseKind == signalsOnlyClauseKind) anySOClause = true;
             if (cl.clauseKind == recommendsClauseKind) anyRecommendsClause = true;
         }
@@ -2627,6 +2629,10 @@ public class JmlAttr extends Attr implements IJmlVisitor {
                 pr.append(cl);
             } else if (t == exceptionalBehaviorClause || t == exceptionalExampleClause) {
                 JmlMethodClauseExpr cl = jmlF.at(cse.pos).JmlMethodClauseExpr(ensuresID, ensuresClauseKind,falseLit);
+                cl.sourcefile = cse.sourcefile;
+                pr.append(cl);
+            } else if (t == compromisedBehaviorClause) {
+                JmlMethodClauseExpr cl = jmlF.at(cse.pos).JmlMethodClauseExpr(ensuresID, alarmsClauseKind, falseLit);
                 cl.sourcefile = cse.sourcefile;
                 pr.append(cl);
             }
@@ -2708,6 +2714,11 @@ public class JmlAttr extends Attr implements IJmlVisitor {
             if (t == ensuresClauseKind) {
                 if (parent.token == exceptionalBehaviorClause || parent.token == exceptionalExampleClause) {
                     log.error(m.pos,"jml.misplaced.clause","Ensures","exceptional");
+                    continue;
+                }
+            } else if(t == alarmsClauseKind) {
+                if(parent.token == compromisedBehaviorClause) {
+                    log.error(m.pos, "jml.misplaced.clause", "Ensures", "alarms");
                     continue;
                 }
             } else if (t == signalsClauseKind) {
@@ -4780,7 +4791,7 @@ public class JmlAttr extends Attr implements IJmlVisitor {
     
     /** This set holds method clause types in which the \result token may appear 
      * (and \not_assigned \only_assigned \only_captured \only_accessible \not_modified) */
-    public Collection<IJmlClauseKind> resultClauses = Utils.asSet(ensuresClauseKind,durationClause,workingspaceClause);
+    public Collection<IJmlClauseKind> resultClauses = Utils.asSet(ensuresClauseKind,durationClause,workingspaceClause,alarmsClauseKind);
     
     /** This set holds method clause types in which the \exception token may appear  */
     public Collection<IJmlClauseKind> exceptionClauses = Collections.singleton(signalsClauseKind);

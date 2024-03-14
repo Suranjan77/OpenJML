@@ -141,7 +141,8 @@ public class Extensions {
             MethodDeclClauseExtension.class, 
             MethodExprClauseExtensions.class, 
             MethodSimpleClauseExtensions.class, 
-            SignalsClauseExtension.class, 
+            SignalsClauseExtension.class,
+            AlarmsClauseExtension.class,
             SignalsOnlyClauseExtension.class, 
             
             // Statements

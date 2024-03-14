@@ -16,6 +16,7 @@ public class MethodSimpleClauseExtensions extends JmlExtension {
     
     public static final String normalBehaviorID = "normal_behavior";
     public static final String exceptionalBehaviorID = "exceptional_behavior";
+    public static final String compromisedBehaviorID = "compromised_behavior";
     public static final String behaviorID = "behavior";
     public static final String feasibleBehaviorID = "feasible_behavior";
     public static final String abruptBehaviorID = "abrupt_behavior";
@@ -36,6 +37,7 @@ public class MethodSimpleClauseExtensions extends JmlExtension {
     public static final IJmlClauseKind modelprogramClause = new MethodKeywordClauseType(modelprogramID);
     public static final IJmlClauseKind normalBehaviorClause = new MethodKeywordClauseType(normalBehaviorID);
     public static final IJmlClauseKind exceptionalBehaviorClause = new MethodKeywordClauseType(exceptionalBehaviorID);
+    public static final IJmlClauseKind compromisedBehaviorClause = new MethodKeywordClauseType(compromisedBehaviorID);
     public static final IJmlClauseKind behaviorClause = new MethodKeywordClauseType(behaviorID);
     public static final IJmlClauseKind feasibleBehaviorClause = new MethodKeywordClauseType(feasibleBehaviorID);
     public static final IJmlClauseKind abruptBehaviorClause = new MethodKeywordClauseType(abruptBehaviorID);
@@ -56,6 +58,7 @@ public class MethodSimpleClauseExtensions extends JmlExtension {
     static {
         synonym("normal_behaviour",normalBehaviorClause);
         synonym("exceptional_behaviour",exceptionalBehaviorClause);
+        synonym("compromised_behaviour",compromisedBehaviorClause);
         synonym("abrupt_behaviour",abruptBehaviorClause);
         synonym("feasible_behaviour",feasibleBehaviorClause);
         synonym("behaviour",behaviorClause);

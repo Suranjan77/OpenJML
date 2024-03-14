@@ -49,6 +49,7 @@ public interface JmlTreeVisitor<R,P> extends TreeVisitor<R,P> {
     R visitJmlMethodClauseExpr(JmlMethodClauseExpr that, P p) ;
     R visitJmlMethodClauseGroup(JmlMethodClauseGroup that, P p) ;
     R visitJmlMethodClauseSignals(JmlMethodClauseSignals that, P p) ;
+    R visitJmlMethodClauseAlarms(JmlMethodClauseAlarms that, P p) ;
     R visitJmlMethodClauseSigOnly(JmlMethodClauseSignalsOnly that, P p) ;
     R visitJmlMethodClauseStoreRef(JmlMethodClauseStoreRef that, P p) ;
     R visitJmlMethodDecl(JmlMethodDecl that, P p)             ;

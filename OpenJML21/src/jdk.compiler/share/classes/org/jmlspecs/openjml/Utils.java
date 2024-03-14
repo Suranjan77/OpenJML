@@ -189,6 +189,7 @@ public class Utils {
     
     /** Do ESC - set by Main.setupOptions */
     public boolean esc = false;
+    public boolean jml4sec = false;
 
     /** Do RAC - set by Main.setupOptions */
     public boolean rac = false;

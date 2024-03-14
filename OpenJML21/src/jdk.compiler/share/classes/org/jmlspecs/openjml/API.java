@@ -1,5 +1,5 @@
 /*
- * This file is part of the OpenJML project. 
+ * This file is part of the OpenJML project.
  * Author: David R. Cok
  */
 package org.jmlspecs.openjml;
@@ -28,6 +28,7 @@ import org.jmlspecs.openjml.JmlTree.JmlMethodSpecs;
 import org.jmlspecs.openjml.JmlTree.JmlVariableDecl;
 import org.jmlspecs.openjml.esc.BasicBlocker2;
 import org.jmlspecs.openjml.esc.BasicProgram;
+import org.jmlspecs.openjml.esc.JmlAssertionAdder;
 import org.jmlspecs.openjml.esc.JmlEsc;
 import org.jmlspecs.openjml.proverinterface.IProverResult;
 import org.jmlspecs.openjml.visitors.JmlTreeScanner;
@@ -63,8 +64,9 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position;
+import uk.ac.gre.jml4sec.gen.visitor.SMTVerificationInstrumenter;
 
-/** This class is a wrapper and publicly published API for the OpenJML tool 
+/** This class is a wrapper and publicly published API for the OpenJML tool
  * functionality.  In principle, any external programmatic interaction with
  * openjml would go through methods in this class.  [In practice some internal
  * classes are exposed as well.]
@@ -77,11 +79,11 @@ import com.sun.tools.javac.util.Position;
  * allowed, a method call is provided).
  * <P>
  * There are also static methods, named execute, that are public entry points to the
- * various tools (jml checker, jmldoc, ...) that openjml provides.  It performs 
+ * various tools (jml checker, jmldoc, ...) that openjml provides.  It performs
  * a one-time processing of files, without making the classes and ASTs available,
  * just like a command-line execution would do.
  * <P>
- * The public API consists of the methods with public visibility in this 
+ * The public API consists of the methods with public visibility in this
  * compilation unit.
  *
  * @author David Cok
@@ -91,18 +93,18 @@ public class API implements IAPI {
     /** The encapsulated org.jmlspecs.openjml.Main object */
     protected Main main = null;
     //@ initially main != null;
-    
+
     /** The listener for diagnostic messages */
     protected DiagnosticListener<? extends JavaFileObject> diagListener = null;
-    
+
 //    /** The listener for proof results */
 //    protected IProofResultListener proofResultListener;
-    
+
 
     /** Creates a new compilation context, initialized with given command-line options;
      * use Factory.makeAPI to create new API objects.
      * Output is sent to System.out; no diagnostic listener is used (so errors
-     * and warnings are sent to System.out). 
+     * and warnings are sent to System.out).
      * @param args the command-line options and initial set of files with which
      * to load the compilation environment
      */
@@ -110,7 +112,7 @@ public class API implements IAPI {
     protected API(/*@non_null*/ String ... args) throws IOException {
         this(null,null,null,args);
     }
-    
+
     /** Creates an API that will send informational output to the
      * given PrintWriter and diagnostic output to the given listener; no
      * operations are initiated however;
@@ -121,8 +123,8 @@ public class API implements IAPI {
      * @param args files and additional options (as command-line arguments)
      */
     //@ ensures isOpen;
-    protected API(/*@nullable*/ PrintWriter writer, 
-            /*@nullable*/ DiagnosticListener<? extends JavaFileObject> listener, 
+    protected API(/*@nullable*/ PrintWriter writer,
+            /*@nullable*/ DiagnosticListener<? extends JavaFileObject> listener,
             /*@nullable*/ Options options,
             /*@non_null*/ String... args) throws java.io.IOException {
         if (writer == null) {
@@ -132,7 +134,7 @@ public class API implements IAPI {
         this.diagListener = listener;
         // FIXME - handle options and args
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#context()
      */
@@ -157,15 +159,15 @@ public class API implements IAPI {
             Main.progressListener = () -> p;
         }
     }
-    
+
     IProofResultListener prl;
-    
-    @Override 
+
+    @Override
     public IProofResultListener setProofResultListener(/*@nullable*/ IProofResultListener p) {
     	prl = p;
     	return context().get(IProofResultListener.class).setListener(p);
     }
-    
+
     /** Returns the string describing the version of OpenJML that is this
      * set of classes.
      * @return the version of this instance of OpenJML
@@ -174,7 +176,7 @@ public class API implements IAPI {
     public /*@non_null*/ String version() {
         return JavaCompiler.version();
     }
-    
+
     // See comment in parent interface
     @Override
     public void initOptions(/*@non_null*/ Options options, /*@non_null*/ String ... args) {
@@ -182,7 +184,7 @@ public class API implements IAPI {
     	Options.instance(c).putAll(options);
     	Main.instance(c).addOptions(args);
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#setOption(java.lang.String, java.lang.String)
      */
@@ -192,14 +194,14 @@ public class API implements IAPI {
     public void addOptions(String... args) {
         main.addOptions(args);
     }
-    
+
     @Override
     public void addUncheckedOption(String arg) {
         main.addUncheckedOption(arg);
     }
 
 
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getOption(java.lang.String)
      */
@@ -207,13 +209,13 @@ public class API implements IAPI {
     public /*@nullable*/ String getOption(String name) {
         return Options.instance(context()).get(name);
     }
-    
+
     // Expected to be called in a different thread
     @Override
     public void abort() {
        if (main != null) JmlEsc.instance(main.context()).abort();
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#execute(Options, String[])
      */
@@ -222,7 +224,7 @@ public class API implements IAPI {
         int ret = main.executeNS(main.out(), diagListener, prl, options, args);
         return ret;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#execute(PrintWriter, DiagnosticListener<JavaFileObject>, Options, String[])
      */
@@ -231,14 +233,14 @@ public class API implements IAPI {
         int ret = main.executeNS(writer,diagListener, options,args);
         return ret;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#jmldoc(String[])
      */
     public int jmldoc(/*@non_null*/ String... args) {
         return 4; // FIXME - org.jmlspecs.openjml.jmldoc.Main.execute(args);
     }
-    
+
     @Override
     public boolean isTypechecked(ClassSymbol csym) {
         Env<AttrContext> env = Enter.instance(context()).getEnv(csym);
@@ -253,7 +255,7 @@ public class API implements IAPI {
 //        return isTypechecked(csym);
     	return false; // FIXME
     }
-    
+
     @Override
     public void clearTypes(Collection<? extends JCCompilationUnit> trees) {
         //for (JCCompilationUnit t: trees) new JmlClearTypes(context).scan(t);
@@ -276,7 +278,7 @@ public class API implements IAPI {
         return typecheck(list.toList());
     }
 
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#typecheck(java.util.Collection<? extends JmlCompilationUnit>)
      */
@@ -292,7 +294,7 @@ public class API implements IAPI {
         list.addAll(trees);
         return typecheck(list.toList());
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#typecheck(java.util.List<? extends JmlCompilationUnit>)
      */
@@ -312,7 +314,7 @@ public class API implements IAPI {
 
         ListBuffer<JCCompilationUnit> jlist = new ListBuffer<JCCompilationUnit>();
         jlist.addAll(list);
-        
+
         // FIXME
         // The following statements are a subset of the compilation tool chain from JavaCompiler
 //        JavaCompiler dc =
@@ -343,7 +345,7 @@ public class API implements IAPI {
         }
         return trees;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseFiles(String[])
      */
@@ -355,7 +357,7 @@ public class API implements IAPI {
         }
         return parseFiles(files);
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseFiles(javax.tools.JavaFileObject[])
      */
@@ -367,7 +369,7 @@ public class API implements IAPI {
             trees.add((JmlCompilationUnit)c.parse(fileObject));
         return trees;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseFiles(java.util.Collection)
      */
@@ -379,7 +381,7 @@ public class API implements IAPI {
             trees.add((JmlCompilationUnit)c.parse(fileObject));
         return trees;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseSingleFile(java.io.File)
      */
@@ -387,8 +389,8 @@ public class API implements IAPI {
     public /*@non_null*/ JmlCompilationUnit parseSingleFile(/*@non_null*/ String filename) {
         return parseSingleFile(makeJFOfromFilename(filename));
     }
-    
-    
+
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseSingleFile(java.io.File)
      */
@@ -412,7 +414,7 @@ public class API implements IAPI {
         if (name.endsWith(".java")) jcu.specsCompilationUnit = jcu;
         return jcu;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseExpression(java.lang.CharSequence, boolean)
      */
@@ -422,7 +424,7 @@ public class API implements IAPI {
         JmlParser p = ((com.sun.tools.javac.parser.JmlFactory)com.sun.tools.javac.parser.JmlFactory.instance(context())).newParser(text,true,true,true,isJML);
         return p.parseExpression();
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseStatement(java.lang.CharSequence, boolean)
      */
@@ -432,7 +434,7 @@ public class API implements IAPI {
         JmlParser p = ((com.sun.tools.javac.parser.JmlFactory)com.sun.tools.javac.parser.JmlFactory.instance(context())).newParser(text,true,true,true,isJML);
         return p.parseStatement();
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#parseAndCheck(java.io.File)
      */
@@ -457,7 +459,7 @@ public class API implements IAPI {
     public void attachSpecs(JmlCompilationUnit javaSource, JmlCompilationUnit specsSource) {
         javaSource.specsCompilationUnit = specsSource == null ? javaSource: specsSource;
     }
-    
+
 
     /** Creates a JavaFileObject instance from a pseudo filename and given content
      * @param name the name to give the 'file'
@@ -468,7 +470,7 @@ public class API implements IAPI {
     public JavaFileObject makeJFOfromString(String name, String content) throws Exception {
         return new StringJavaFileObject(name,content);
     }
-    
+
     /** Creates a JavaFileObject instance from a real file, by name
      * @param filepath the path to the file, either absolute or relative to the current working directory
      * @return the resulting JavaFileObject
@@ -479,7 +481,7 @@ public class API implements IAPI {
 //        return dfm.getFileForInput(filepath);
     	return null; // FIXME
     }
-    
+
     /** Creates a JavaFileObject instance from a File object
      * @param file the file to wrap
      * @return the resulting JavaFileObject
@@ -490,9 +492,9 @@ public class API implements IAPI {
 //        return dfm.getJavaFileForInput(file);
     	return null; // FIXME
     }
-    
+
     // TODO: need an easier way to find out if there are errors from parseAndCheck or enterAndCheck
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getPackageSymbol(java.lang.String)
      */
@@ -514,7 +516,7 @@ public class API implements IAPI {
 //        return Symtab.instance(context()).classes.get(n);
     	return null; // FIXME
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getClassSymbol(com.sun.tools.javac.code.Symbol.ClassSymbol, java.lang.String)
      */
@@ -526,7 +528,7 @@ public class API implements IAPI {
         }
         return null;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getMethodSymbol(com.sun.tools.javac.code.Symbol.ClassSymbol, java.lang.String)
      */
@@ -538,7 +540,7 @@ public class API implements IAPI {
         }
         return null;
     } // FIXME - need a way to handle multiple methods with the same name
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getVarSymbol(com.sun.tools.javac.code.Symbol.ClassSymbol, java.lang.String)
      */
@@ -550,7 +552,7 @@ public class API implements IAPI {
         }
         return null;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getSymbol(org.jmlspecs.openjml.JmlTree.JmlClassDecl)
      */
@@ -558,7 +560,7 @@ public class API implements IAPI {
     public /*@nullable*/ ClassSymbol getSymbol(/*@non_null*/ JmlClassDecl decl) {
         return decl.sym;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getSymbol(org.jmlspecs.openjml.JmlTree.JmlMethodDecl)
      */
@@ -566,7 +568,7 @@ public class API implements IAPI {
     public /*@nullable*/ MethodSymbol getSymbol(/*@non_null*/ JmlMethodDecl decl) {
         return decl.sym;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getSymbol(org.jmlspecs.openjml.JmlTree.JmlVariableDecl)
      */
@@ -574,7 +576,7 @@ public class API implements IAPI {
     public /*@nullable*/ VarSymbol getSymbol(/*@non_null*/ JmlVariableDecl decl) {
         return decl.sym;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getClassDecl(java.lang.String)
      */
@@ -584,7 +586,7 @@ public class API implements IAPI {
     public /*@non_null*/ JmlClassDecl getClassDecl(/*@non_null*/ String qualifiedName) {
         return getClassDecl(getClassSymbol(qualifiedName));
     }
-        
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getClassDecl(com.sun.tools.javac.code.Symbol.ClassSymbol)
      */
@@ -595,7 +597,7 @@ public class API implements IAPI {
         JCTree tree = JmlEnter.instance(context()).getClassEnv(csym).tree;
         return (JmlClassDecl)tree;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getMethodDecl(com.sun.tools.javac.code.Symbol.MethodSymbol)
      */
@@ -611,7 +613,7 @@ public class API implements IAPI {
         }
         return null;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getVarDecl(com.sun.tools.javac.code.Symbol.VarSymbol)
      */
@@ -627,11 +629,11 @@ public class API implements IAPI {
         }
         return null;
     }
-    
-    
+
+
     /** A cached object to search parse trees (not thread safe since it is static) */
     static protected Finder finder = new Finder();
-    
+
     /** A class that searches parse trees for nodes with a given position range.
      * This class presumes that the AST nodes have start and end position information
      * for which (a) each node has an end position at or after the start position,
@@ -641,7 +643,7 @@ public class API implements IAPI {
      * not necessarily true of an AST produced by translation or other AST edits. */
     public static class Finder extends JmlTreeScanner {
     	public Finder() { super(null); }
-    	
+
         /** Find the node within the given tree that encompasses the given
          * start and end position.
          * @param tree the root of the tree
@@ -657,13 +659,13 @@ public class API implements IAPI {
             scan(tree);
             return found;
         }
-        
+
         int startpos;
         int endpos;
         JmlCompilationUnit tree;
         public JCTree found = null;
         public JmlMethodDecl parentMethod = null;
-        
+
         /** Called for each node as the tree is visited - do not call directly - use find() */
         public void scan(JCTree node) {
             if (node == null) return;
@@ -699,12 +701,12 @@ public class API implements IAPI {
     protected JCTree findNode(JmlCompilationUnit tree, int startpos, int endpos) {
         return finder.find(tree,startpos,endpos);
     }
-    
+
 //    /** The method on which ESC was run most recently */
 //    protected MethodSymbol mostRecentProofMethod = null;
 //    
 //    protected BasicProgram mostRecentProgram = null; // FIXME - document; perhaps get rid of, and mostRecentProofMethod
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getCEValue(int, int, java.lang.String, java.lang.String)
      */
@@ -765,7 +767,7 @@ public class API implements IAPI {
 //            return out;
 //        }
         return "No counterexample information available";
-        
+
     }
     @Override  // TODO: REVIEW THIS - get the info through the IProverResult
     public Finder findMethod(JmlCompilationUnit tree, int pos, int end, String text, String fileLocation) {
@@ -792,7 +794,7 @@ public class API implements IAPI {
         JCTree node = findNode(tree,pos,end);
         return finder;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#doESC(com.sun.tools.javac.code.Symbol.MethodSymbol)
      */
@@ -800,26 +802,26 @@ public class API implements IAPI {
     public IProverResult doESC(MethodSymbol msym) {
         JmlMethodDecl decl = getMethodDecl(msym);
         JmlEsc esc = JmlEsc.instance(context());
-        class L implements IProofResultListener { 
+        class L implements IProofResultListener {
         	public L(IProofResultListener chained) { this.chained = chained; }
         	public IProofResultListener chained;
-        	public IProverResult result; 
-        	public void reportProofResult(MethodSymbol msym, IProverResult result) { 
+        	public IProverResult result;
+        	public void reportProofResult(MethodSymbol msym, IProverResult result) {
                 if (result.result() == IProverResult.COMPLETED) return;
                 if (result.result() == IProverResult.RUNNING) return;
-        		this.result = result; 
+        		this.result = result;
         		if (chained != null) chained.reportProofResult(msym, result);
         	}
         };
-        
+
         IProofResultListener p = setProofResultListener(null);
         L l = new L(p);
         setProofResultListener(l);
         esc.check(decl);
         setProofResultListener(p);
-        return l.result; 
+        return l.result;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#doESC(com.sun.tools.javac.code.Symbol.ClassSymbol)
      */
@@ -831,7 +833,7 @@ public class API implements IAPI {
         JmlClassDecl decl = getClassDecl(csym);
         JmlEsc.instance(context()).check(decl);
     }
-    
+
 //    /* (non-Javadoc)
 //     * @see org.jmlspecs.openjml.IAPI#getProofResult(com.sun.tools.javac.code.Symbol.MethodSymbol)
 //     */
@@ -846,7 +848,7 @@ public class API implements IAPI {
 //    public /*@nullable*/ Map<MethodSymbol,IProverResult> getProofResults() {
 //        return JmlEsc.instance(context()).proverResults;
 //    }
-    
+
     // TODO - move these two methods to Utils?
     /** Adds the given class and all its supertypes (recursively) to the given list,
      * ordered with parent classes first.
@@ -869,7 +871,7 @@ public class API implements IAPI {
         }
         list.add(csym);
     }
-    
+
     /** Adds the method and all the methods it overrides (in classes or interfaces)
      * to the given list
      * @param msym the method in question
@@ -892,7 +894,7 @@ public class API implements IAPI {
             } // FIXME - there must be a utility somewhere that does this already
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getSpecs(com.sun.tools.javac.code.Symbol.ClassSymbol)
      */
@@ -900,7 +902,7 @@ public class API implements IAPI {
     public /*@non_null*/ TypeSpecs getSpecs(/*@non_null*/ ClassSymbol sym) {
         return JmlSpecs.instance(context()).getAttrSpecs(sym);
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getAllSpecs(com.sun.tools.javac.code.Symbol.ClassSymbol)
      */
@@ -921,7 +923,7 @@ public class API implements IAPI {
     public /*@ non_null */ JmlSpecs.MethodSpecs getSpecs(/*@non_null*/ MethodSymbol sym) {
         return JmlSpecs.instance(context()).getAttrSpecs(sym);
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getAllSpecs(com.sun.tools.javac.code.Symbol.MethodSymbol)
      */
@@ -939,7 +941,7 @@ public class API implements IAPI {
         for (MethodSymbol c: list) tslist.add(specs.getAttrSpecs(c));
         return tslist;
     }
-    
+
     // FIXME - should this be inherited specs; what about parameter name renaming?
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getDenestedSpecs(com.sun.tools.javac.code.Symbol.MethodSymbol)
@@ -948,7 +950,7 @@ public class API implements IAPI {
     public /*@ nullable*/ JmlMethodSpecs getDenestedSpecs(/*@non_null*/ MethodSymbol sym) {
         return JmlSpecs.instance(context()).getDenestedSpecs(sym);
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#getSpecs(com.sun.tools.javac.code.Symbol.VarSymbol)
      */
@@ -956,7 +958,7 @@ public class API implements IAPI {
     public /*@non_null*/ FieldSpecs getSpecs(/*@non_null*/ VarSymbol sym) {
         return JmlSpecs.instance(context()).getAttrSpecs(sym);
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#nodeFactory()
      */
@@ -967,8 +969,8 @@ public class API implements IAPI {
         JmlAttr.instance(context());  // Avoids circular tool registration problems
         return JmlTree.Maker.instance(context());
     }
-    
-    
+
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#prettyPrint(com.sun.tools.javac.tree.JCTree)
      */ // FIXME - allow the option of showing composite specs?
@@ -980,7 +982,7 @@ public class API implements IAPI {
         else ast.accept(p);
         return s.toString();
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#prettyPrintJML(com.sun.tools.javac.tree.JCTree)
      */
@@ -992,7 +994,7 @@ public class API implements IAPI {
         else ast.accept(p);
         return s.toString();
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#prettyPrint(java.util.List, boolean, java.lang.String)
      */
@@ -1008,7 +1010,7 @@ public class API implements IAPI {
         }
         return s.toString();
     }
-    
+
     /* (non-Javadoc)
      * @see org.jmlspecs.openjml.IAPI#close()
      */
@@ -1021,23 +1023,32 @@ public class API implements IAPI {
         main.context = null;
         main = null;
     }
-    
+
+    @Override
+    public void translate(JmlCompilationUnit unit) {
+        JmlEsc esc = JmlEsc.instance(context());
+        esc.assertionAdder = new JmlAssertionAdder(context(), true, false);
+        esc.assertionAdder.convert(unit);
+        SMTVerificationInstrumenter generator = new SMTVerificationInstrumenter(context(), esc);
+        unit.accept(generator);
+    }
+
     /** This class encapsulates a String as a JavaFileObject, making it a pseudo-file
      */
     protected static class StringJavaFileObject extends SimpleJavaFileObject {
-        
+
         /** The content of the mock file */
         //@ non_null
         protected String content;
-        
+
         /** A fake file name, used when the user does not want to be bothered
          * supplying one.  We have to make and cache this because it is a pain to
          * deal with exceptions in constructors.
          */
         //@ non_null
         static final protected URI uritest = makeURI();
-        
-        /** A utility method to make the URI, so it can handle the exceptions. 
+
+        /** A utility method to make the URI, so it can handle the exceptions.
          * We don't try to recover gracefully if the exception occurs - this is
          * just used in testing anyway. */
         private static URI makeURI() {
@@ -1074,8 +1085,8 @@ public class API implements IAPI {
         public CharSequence getCharContent(boolean ignoreEncodingErrors) {
             return content;
         }
-        
-        /** Overrides the parent method to allow name compatibility between 
+
+        /** Overrides the parent method to allow name compatibility between
          * pseudo files of different kinds.
          */
         // Don't worry about whether the kinds match, just the file extension
@@ -1091,13 +1102,13 @@ public class API implements IAPI {
                 return s.endsWith("/" + baseName);
             }
         }
-        
+
         /** Returns true if the receiver and argument are the same object */
         @Override
         public boolean equals(Object o) {
             return o == this;
         }
-        
+
         /** A definition of hashCode, since we have a definition of equals */
         @Override
         public int hashCode() {

@@ -125,6 +125,7 @@ public class JmlTree {
         JmlMethodClauseCallable JmlMethodClauseCallable(List<JmlMethodSig> methodSignatures);
         JmlMethodClauseConditional JmlMethodClauseConditional(String keyword, IJmlClauseKind kind, JCTree.JCExpression e, JCTree.JCExpression predicate);
         JmlMethodClauseSignals JmlMethodClauseSignals(String keyword, IJmlClauseKind kind, JCTree.JCVariableDecl var, JCTree.JCExpression e);
+        JmlMethodClauseAlarms JmlMethodClauseAlarms(String keyword, IJmlClauseKind t, JCTree.JCVariableDecl var, JCTree.JCExpression e);
         JmlMethodClauseSignalsOnly JmlMethodClauseSignalsOnly(String keyword, IJmlClauseKind kind, List<JCTree.JCExpression> e);
         JmlMethodClause JmlMethodClauseStoreRef(String keyword, IJmlClauseKind kind, List<JCExpression> list);
         JmlMethodInvocation JmlMethodInvocation(JmlTokenKind token, List<JCExpression> args);
@@ -896,6 +897,10 @@ public class JmlTree {
         @Override
         public JmlMethodClauseSignals JmlMethodClauseSignals(String keyword, IJmlClauseKind t, JCTree.JCVariableDecl var, JCTree.JCExpression e) {
             return new JmlMethodClauseSignals(pos,keyword,t,var,e);
+        }
+
+        @Override
+        public JmlMethodClauseAlarms JmlMethodClauseAlarms(String keyword, IJmlClauseKind t, JCTree.JCVariableDecl var, JCTree.JCExpression e) { return new JmlMethodClauseAlarms(pos,keyword,t,var,e);
         }
         
         @Override
@@ -2613,6 +2618,40 @@ public class JmlTree {
                 return ((JmlTreeVisitor<R,D>)v).visitJmlMethodClauseSignals(this, d);
             } else {
                 System.out.println("A JmlMethodClauseSignals expects an JmlTreeVisitor, not a " + v.getClass());
+                return super.accept(v,d);
+            }
+        }
+    }
+
+    /** This class represents a alarms clause in a method specification. */
+    public static class JmlMethodClauseAlarms extends JmlMethodClause {
+
+        public JCTree.JCVariableDecl vardef;
+        public JCTree.JCExpression expression;
+
+        // NOTE: the ident in the variable declaration may be null
+        /** The constructor for the AST node - but use the factory to get new nodes, not this */
+        protected JmlMethodClauseAlarms(int pos, String keyword, IJmlClauseKind clauseType, JCTree.JCVariableDecl var, JCTree.JCExpression expression) {
+            super(pos, keyword, clauseType);
+            this.vardef = var;
+            this.expression = expression;
+        }
+
+        @Override
+        public void accept(Visitor v) {
+            if (v instanceof IJmlVisitor) {
+                ((IJmlVisitor)v).visitJmlMethodClauseAlarms(this);
+            } else {
+                super.accept(v);
+            }
+        }
+
+        @Override
+        public <R,D> R accept(TreeVisitor<R,D> v, D d) {
+            if (v instanceof JmlTreeVisitor) {
+                return ((JmlTreeVisitor<R,D>)v).visitJmlMethodClauseAlarms(this, d);
+            } else {
+                System.out.println("A JmlMethodClauseAlarms expects an JmlTreeVisitor, not a " + v.getClass());
                 return super.accept(v,d);
             }
         }

@@ -663,4 +663,8 @@ public interface IAPI {
     //@ ensures !isOpen;
     public void close();
 
+    /**
+     * The method runs the JML4Sec related code.
+     */
+    void translate(JmlCompilationUnit unit);
 }

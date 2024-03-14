@@ -75,6 +75,7 @@ import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Pair;
 import com.sun.tools.javac.util.PropagatedException;
+import uk.ac.gre.jml4sec.JML4Sec;
 
 import static com.sun.tools.javac.parser.Tokens.*;
 
@@ -386,6 +387,12 @@ public class JmlCompiler extends JavaCompiler {
                 if (utils.jmlverbose >= Utils.PROGRESS && !Utils.testingMode && JmlOption.isOption(context, JmlOption.SHOW_SUMMARY)) utils.note(false,summary);
         	}
     		return noresults; // Empty list - Do nothing more
+        } else if (utils.jml4sec) {
+            JML4Sec jml4Sec = new JML4Sec();
+            for (Env<AttrContext> env: envs) {
+                jml4Sec.typeCheck((JmlCompilationUnit) env.toplevel);
+            }
+            return noresults;
         } else if (utils.infer) {
             for (Env<AttrContext> env: envs)
                 infer(env);

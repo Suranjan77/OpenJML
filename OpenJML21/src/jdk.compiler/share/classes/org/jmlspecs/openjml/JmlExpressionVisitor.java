@@ -108,6 +108,7 @@ public abstract class JmlExpressionVisitor<R,P> implements JmlTreeVisitor<R,P> {
     public R visitJmlMethodClauseExpr(JmlMethodClauseExpr that, P p)                    { return shouldNotBeCalled(that); }
     public R visitJmlMethodClauseGroup(JmlMethodClauseGroup that, P p)                  { return shouldNotBeCalled(that); }
     public R visitJmlMethodClauseSignals(JmlMethodClauseSignals that, P p)              { return shouldNotBeCalled(that); }
+    public R visitJmlMethodClauseAlarms(JmlMethodClauseAlarms that, P p)              { return shouldNotBeCalled(that); }
     public R visitJmlMethodClauseSigOnly(JmlMethodClauseSignalsOnly that, P p)          { return shouldNotBeCalled(that); }
     public R visitJmlMethodClauseStoreRef(JmlMethodClauseStoreRef that, P p)            { return shouldNotBeCalled(that); }
     public R visitJmlMethodDecl(JmlMethodDecl that, P p)                                { return shouldNotBeCalled(that); }
