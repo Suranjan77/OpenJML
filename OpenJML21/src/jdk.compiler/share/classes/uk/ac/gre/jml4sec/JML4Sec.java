@@ -4,13 +4,14 @@ import org.jmlspecs.openjml.Factory;
 import org.jmlspecs.openjml.IAPI;
 import org.jmlspecs.openjml.JmlTree.JmlCompilationUnit;
 
+import com.sun.tools.javac.util.Context;
 public class JML4Sec {
 
-    public void typeCheck(JmlCompilationUnit compilationUnit) {
+    public void typeCheck(JmlCompilationUnit compilationUnit, Context context) {
         int errors = 0;
 
         try {
-            IAPI api = Factory.makeAPI();
+            IAPI api = Factory.makeAPIWithContext(context);
 
             errors = api.typecheck(compilationUnit);
 
