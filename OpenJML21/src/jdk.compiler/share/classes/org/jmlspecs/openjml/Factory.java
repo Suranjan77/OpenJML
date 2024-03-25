@@ -20,8 +20,6 @@ public class Factory {
          * @param args command-line options
     	 */
     	/*@non_null*/ IAPI makeAPI(/*@nullable*/ PrintWriter w, /*@nullable*/ DiagnosticListener<JavaFileObject> listener, /*@nullable*/ Options options, String... args) throws Exception;
-
-        /*@non_null*/ IAPI makeAPIWithContext(Context context) throws Exception;
     }
 
     /** The default concrete API factory class */
@@ -34,13 +32,6 @@ public class Factory {
         public /*@non_null*/ IAPI makeAPI(/*@nullable*/ PrintWriter w, /*@nullable*/ DiagnosticListener<JavaFileObject> listener, /*@nullable*/ Options options, String... args) throws Exception {
             return new API(w,listener,options,args);
         }
-
-        @Override
-        public IAPI makeAPIWithContext(Context context) throws Exception {
-            API api = new API(null,null,null,new String[] {});
-            api.main.context = context;
-            return api;
-        }
     }
 
     /** The factory to use to generated API objects. */
@@ -51,12 +42,6 @@ public class Factory {
      */
     static public /*@non_null*/ IAPI makeAPI(String ... args) throws Exception {
         return apiFactory.makeAPI(null,null,null,args);
-    }
-
-    /** Creates a new IAPI object using the registered factory.
-     */
-    static public /*@non_null*/ IAPI makeAPIWithContext(Context context) throws Exception {
-        return apiFactory.makeAPIWithContext(context);
     }
 
     /** Creates a new IAPI object using the registered factory.

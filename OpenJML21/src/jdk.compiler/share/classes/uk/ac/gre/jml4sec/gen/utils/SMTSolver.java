@@ -30,7 +30,6 @@ public class SMTSolver {
         } catch (Exception e) {
             solver.exit();
             e.printStackTrace();
-            solver = null;
             return false;
         }
 
@@ -40,7 +39,7 @@ public class SMTSolver {
 
         solver.exit();
 
-        return res.equalsIgnoreCase("sat");
+        return res.equalsIgnoreCase("unsat");
     }
 
     public static String getProverExec() {

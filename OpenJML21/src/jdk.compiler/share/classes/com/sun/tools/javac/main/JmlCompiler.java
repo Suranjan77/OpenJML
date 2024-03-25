@@ -5,79 +5,37 @@
 // FIXME - do a review
 package com.sun.tools.javac.main;
 
-import static com.sun.tools.javac.code.Flags.UNATTRIBUTED;
-import static com.sun.tools.javac.main.Option.PROC;
-
-import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-
-import javax.annotation.processing.Processor;
-import javax.tools.JavaFileObject;
-
-import org.jmlspecs.openjml.IJmlClauseKind.ModifierKind;
-//import org.jmlspecs.openjml.JmlClearTypes;
-import org.jmlspecs.openjml.JmlOption;
-import org.jmlspecs.openjml.JmlOptions;
-import org.jmlspecs.openjml.JmlPretty;
-import org.jmlspecs.openjml.JmlSpecs;
-import org.jmlspecs.openjml.JmlTokenKind;
-import org.jmlspecs.openjml.JmlTree;
-import org.jmlspecs.openjml.Main;
-import org.jmlspecs.openjml.Utils;
-import org.jmlspecs.openjml.JmlAstPrinter;
-import org.jmlspecs.openjml.JmlCheckSpecs;
-import org.jmlspecs.openjml.JmlSpecs.TypeSpecs;
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.comp.*;
+import com.sun.tools.javac.comp.CompileStates.CompileState;
+import com.sun.tools.javac.jvm.ClassReader;
+import com.sun.tools.javac.parser.JmlScanner;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.util.*;
+import com.sun.tools.javac.util.Log.WriterKind;
+import org.jmlspecs.openjml.*;
 import org.jmlspecs.openjml.JmlTree.JmlClassDecl;
+import org.jmlspecs.openjml.Main;
 import org.jmlspecs.openjml.JmlTree.JmlCompilationUnit;
-import org.jmlspecs.openjml.JmlTree.Maker;
-import org.jmlspecs.openjml.Main.Cmd;
-import org.jmlspecs.openjml.Main.IProgressListener;
 import org.jmlspecs.openjml.esc.JmlAssertionAdder;
 import org.jmlspecs.openjml.esc.JmlEsc;
 import org.jmlspecs.openjml.ext.Modifiers;
 import org.jmlspecs.openjml.visitors.JmlUseSubstitutions;
-
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.comp.Attr;
-import com.sun.tools.javac.comp.AttrContext;
-import com.sun.tools.javac.comp.CompileStates;
-import com.sun.tools.javac.comp.CompileStates.CompileState;
-import com.sun.tools.javac.comp.Env;
-import com.sun.tools.javac.comp.JmlAttr;
-import com.sun.tools.javac.comp.JmlEnter;
-import com.sun.tools.javac.comp.JmlMemberEnter;
-import com.sun.tools.javac.comp.JmlResolve;
-import com.sun.tools.javac.comp.Resolve;
-import com.sun.tools.javac.comp.Todo;
-import com.sun.tools.javac.jvm.ClassReader;
-import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.main.JavaCompiler.InitialFileParser;
-import com.sun.tools.javac.parser.JmlScanner;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.*;
-import com.sun.tools.javac.util.Abort;
-import com.sun.tools.javac.util.Assert;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Log;
-import com.sun.tools.javac.util.Log.WriterKind;
-import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Pair;
-import com.sun.tools.javac.util.PropagatedException;
 import uk.ac.gre.jml4sec.JML4Sec;
 
-import static com.sun.tools.javac.parser.Tokens.*;
+import javax.annotation.processing.Processor;
+import javax.tools.JavaFileObject;
+import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Queue;
+
+import static com.sun.tools.javac.main.Option.PROC;
+import static com.sun.tools.javac.parser.Tokens.Token;
+import static com.sun.tools.javac.parser.Tokens.TokenKind;
 
 /**
  * This class extends the JavaCompiler class in order to find and parse
@@ -388,9 +346,9 @@ public class JmlCompiler extends JavaCompiler {
         	}
     		return noresults; // Empty list - Do nothing more
         } else if (utils.jml4sec) {
-            JML4Sec jml4Sec = new JML4Sec();
+            JML4Sec jml4Sec = JML4Sec.instance(context);
             for (Env<AttrContext> env : envs) {
-                jml4Sec.typeCheck((JmlCompilationUnit) env.toplevel, context);
+                jml4Sec.instrument(env.tree);
             }
             return noresults;
         } else if (utils.infer) {

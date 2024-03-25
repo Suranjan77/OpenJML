@@ -1024,15 +1024,6 @@ public class API implements IAPI {
         main = null;
     }
 
-    @Override
-    public void translate(JmlCompilationUnit unit) {
-        JmlEsc esc = JmlEsc.instance(context());
-        esc.assertionAdder = new JmlAssertionAdder(context(), true, false);
-        esc.assertionAdder.convert(unit);
-        SMTVerificationInstrumenter generator = new SMTVerificationInstrumenter(context(), esc);
-        unit.accept(generator);
-    }
-
     /** This class encapsulates a String as a JavaFileObject, making it a pseudo-file
      */
     protected static class StringJavaFileObject extends SimpleJavaFileObject {

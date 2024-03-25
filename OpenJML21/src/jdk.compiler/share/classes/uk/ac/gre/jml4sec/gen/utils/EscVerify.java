@@ -29,10 +29,10 @@ import com.sun.tools.javac.util.Names;
 import org.jmlspecs.openjml.visitors.JmlTreeScanner;
 
 public class EscVerify {
-    private static final String SOURCE_FOLDER = "/Users/suranjanpoudel/Documents/git/ug/OpenJML/OpenJML/src/";
+    private static final String SOURCE_FOLDER = "/Users/sur/Documents/git/ug/OpenJML/OpenJML21/src/";
 
     public static boolean verify(String className, String methodName,
-            Object[] params) {
+                                 Object[] params) {
 
         String classLocation = className.replaceAll("\\.", "/");
 
@@ -40,10 +40,10 @@ public class EscVerify {
 
         try {
             IAPI api = Factory.makeAPI();
-            
+
             JmlCompilationUnit unit = api
                     .parseSingleFile(SOURCE_FOLDER + classLocation + ".java");
-            
+
             CodeGenerator gen = new CodeGenerator(api.context(), methodName,
                     params);
             unit.accept(gen);
@@ -53,6 +53,10 @@ public class EscVerify {
 
             java.util.List<String> output = EscRunner
                     .runEsc(sourceFilePath.toString(), "test_" + methodName);
+
+            if(output.isEmpty()) {
+                return true;
+            }
 
             output.stream().forEach(System.out::println);
         } catch (Exception th) {
@@ -72,16 +76,16 @@ public class EscVerify {
 
     private static class CodeGenerator extends JmlTreeScanner {
 
-        private final Context  context;
+        private final Context context;
 
-        private final String   methodName;
+        private final String methodName;
 
         private final Object[] params;
 
-        private JmlClassDecl   owner;
+        private JmlClassDecl owner;
 
         public CodeGenerator(Context context, String methodName,
-                Object[] params) {
+                             Object[] params) {
             this.context = context;
             this.methodName = methodName;
             this.params = params;
@@ -128,10 +132,10 @@ public class EscVerify {
 
     private static class SourceWriter {
 
-        private static final Pattern     SPEC_COMMENT_PATTERN = Pattern
+        private static final Pattern SPEC_COMMENT_PATTERN = Pattern
                 .compile("/*@(.*?)\\*/", Pattern.DOTALL);
 
-        private final String             originalClassName;
+        private final String originalClassName;
 
         private final JCTree.JCCompilationUnit unit;
 
@@ -165,7 +169,7 @@ public class EscVerify {
                 replacedText.replaceAll("\\s+", " ");
                 replacedText.replaceAll(matchedText, replacedText);
                 replacedText = replacedText.trim();
-                if(replacedText.lastIndexOf("@") == replacedText.length()-1) {
+                if (replacedText.lastIndexOf("@") == replacedText.length() - 1) {
                     replacedText = replacedText.substring(0, replacedText.lastIndexOf('@'));
                 }
                 replacedText = replacedText + "*/";
