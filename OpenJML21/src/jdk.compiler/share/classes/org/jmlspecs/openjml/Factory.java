@@ -6,11 +6,12 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
 
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
 /** This class is a top-level factory for API objects. */
 public class Factory {
-    
+
     /** The interface to be implemented by new API factories */
     public interface IAPIFactory {
     	/** Creates a new API object
@@ -20,7 +21,7 @@ public class Factory {
     	 */
     	/*@non_null*/ IAPI makeAPI(/*@nullable*/ PrintWriter w, /*@nullable*/ DiagnosticListener<JavaFileObject> listener, /*@nullable*/ Options options, String... args) throws Exception;
     }
-    
+
     /** The default concrete API factory class */
     public static class APIFactory implements IAPIFactory {
     	/** Creates a new API object
@@ -32,10 +33,10 @@ public class Factory {
             return new API(w,listener,options,args);
         }
     }
-    
+
     /** The factory to use to generated API objects. */
     public static /*@non_null*/ IAPIFactory apiFactory = new Factory.APIFactory();
-    
+
     /** Creates a new IAPI object using the registered factory.
      * @param args command-line options
      */

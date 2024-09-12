@@ -57,6 +57,7 @@ public class JmlOption {
             utils.cmd = cmd;
             utils.rac = cmd == Cmd.RAC;
             utils.esc = cmd == Cmd.ESC;
+            utils.jml4sec = cmd == Cmd.JML4SEC;
             utils.check = cmd == Cmd.CHECK;
             utils.compile = cmd == Cmd.COMPILE;
             utils.infer   = cmd == Cmd.INFER;
@@ -68,6 +69,7 @@ public class JmlOption {
     public static final JmlOption RAC = new JmlOption("--rac",false,null,"Enables generating code instrumented with runtime assertion checks","--command=rac");
     public static final JmlOption ESC = new JmlOption("--esc",false,null,"Enables static checking","--command=esc");
     //    public static final JmlOption BOOGIE = new JmlOption("-boogie",false,false,"Enables static checking with boogie",null);
+    public static final JmlOption JML$SEC = new JmlOption("--jml4sec",false,null,"Runs jml4sec","--command=jml4sec");
     public static final JmlOption USEJAVACOMPILER = new JmlOption("-java",false,false,"When on, the tool uses only the underlying javac or javadoc compiler (must be the first option)",null) {
         public boolean check(Context context, boolean negate) {
             boolean b = JmlOption.isOption(context,JmlOption.USEJAVACOMPILER);

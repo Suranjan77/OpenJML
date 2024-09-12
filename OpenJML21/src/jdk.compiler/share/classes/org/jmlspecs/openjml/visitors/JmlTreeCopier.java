@@ -406,6 +406,19 @@ public class JmlTreeCopier extends TreeCopier<Void> implements JmlTreeVisitor<JC
     }
 
     @Override
+    public JCTree visitJmlMethodClauseAlarms(JmlMethodClauseAlarms that, Void p) {
+        JmlMethodClauseAlarms copy = M.at(that.pos).JmlMethodClauseAlarms(
+                that.keyword,
+                that.clauseKind,
+                copy(that.vardef,p),
+                copy(that.expression,p));
+        copy.sourcefile = that.sourcefile;
+        copy.type = that.type;
+        copyEndPos(copy,that,copy.sourcefile);
+        return copy;
+    }
+
+    @Override
     public JCTree visitJmlMethodClauseSigOnly(JmlMethodClauseSignalsOnly that, Void p) {
         JmlMethodClauseSignalsOnly copy = M.at(that.pos).JmlMethodClauseSignalsOnly(
                 that.keyword,

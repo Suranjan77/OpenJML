@@ -7,6 +7,7 @@ public class MethodExprClauseExtensions extends JmlExtension {
     
     public static final String requiresID = "requires";
     public static final String ensuresID = "ensures";
+    public static final String alarmsID = "alarms";
     public static final String divergesID = "diverges";
     public static final String whenID = "when";
     public static final String continuesID = "continues";
@@ -18,6 +19,10 @@ public class MethodExprClauseExtensions extends JmlExtension {
     };
     
     public static final IJmlClauseKind ensuresClauseKind = new MethodClauseExprType(ensuresID) {
+        public boolean oldNoLabelAllowed() { return true; }
+    };
+
+    public static final IJmlClauseKind alarmsClauseKind = new MethodClauseExprType(alarmsID) {
         public boolean oldNoLabelAllowed() { return true; }
     };
     
